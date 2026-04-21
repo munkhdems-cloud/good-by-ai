@@ -1,67 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Good Boy Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      color: white;
-      text-align: center;
-    }
-    #chat {
-      width: 300px;
-      margin: 20px auto;
-      padding: 10px;
-      background: #2a2a2a;
-      border-radius: 10px;
-      height: 400px;
-      overflow-y: auto;
-    }
-    .msg { margin: 8px; }
-    .user { color: #4fc3f7; }
-    .bot { color: #81c784; }
-    input {
-      width: 200px;
-      padding: 8px;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      background: #4fc3f7;
-      color: white;
-    }
-  </style>
-</head>
-<body>
-
-<h2>🐶 Good Boy Chatbot</h2>
-
-<div id="chat"></div>
-
-<input id="input" placeholder="Say something..." />
-<button onclick="send()">Send</button>
-
 <script>
-function botReply(text) {
-  text = text.toLowerCase();
-
-  if (text.includes("hi") || text.includes("hello"))
-    return "Woof! Hello, human 🐶";
-
-  if (text.includes("how are you"))
-    return "I'm a good boy, always happy!";
-
-  if (text.includes("bye"))
-    return "Goodbye! I'll be waiting 🐾";
-
-  return "Woof... I don't understand, but I'm still a good boy!";
-}
-
-function send() {
+async function send() {
   let input = document.getElementById("input");
   let chat = document.getElementById("chat");
 
@@ -70,13 +8,28 @@ function send() {
 
   chat.innerHTML += `<div class="msg user">You: ${userText}</div>`;
 
-  let reply = botReply(userText);
-  chat.innerHTML += `<div class="msg bot">Good Boy: ${reply}</div>`;
-
   input.value = "";
+
+  // CALL AI
+  let response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_API_KEY_HERE"
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are Good Boy, a friendly, funny, human-like chatbot." },
+        { role: "user", content: userText }
+      ]
+    })
+  });
+
+  let data = await response.json();
+  let reply = data.choices[0].message.content;
+
+  chat.innerHTML += `<div class="msg bot">Good Boy: ${reply}</div>`;
   chat.scrollTop = chat.scrollHeight;
 }
 </script>
-
-</body>
-</html>
